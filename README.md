@@ -42,5 +42,5 @@ pip install -r requirements.txt
 - Tanı/diagnostic ve runtime kurulum (pip install) hücreleri kaldırılmıştır. Bağımlılıklar `requirements.txt` ile yönetilir.
 - İsteğe bağlı iyileştirmeler: model hiperparametreleri, özellik seçimi, farklı modellerle karşılaştırma.
 
-## Lisans
-Bu çalışma hackathon kullanımına yöneliktir. Veri setlerinin lisans ve paylaşım koşulları orijinal sağlayıcıya aittir.
+## Hackathon linki
+https://www.kaggle.com/competitions/trendyol-e-ticaret-hackathonu-2025-kaggle
