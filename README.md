@@ -101,8 +101,14 @@ Both models output a probability score per `(session, product)` pair, which is u
 
 ```
 Trendyol-E-Ticaret-Hackathonu/
-├── main.ipynb         # Full pipeline: load → feature eng → train → submit
-├── data/              # Local parquet data files (place competition files here)
+├── main.ipynb              # Full pipeline: load → feature eng → train → submit
+├── two_tower_model.py      # Two-tower neural network + FAISS ANN search
+├── sequential_model.py     # GRU4Rec session-based sequential model
+├── learning_to_rank.py     # LambdaRank / ListNet / RankNet losses
+├── counterfactual_eval.py  # IPS counterfactual evaluation
+├── feature_store.py        # Redis-based real-time feature store
+├── semantic_search.py      # Semantic retrieval (retrieve-then-rerank)
+├── data/                   # Local parquet data files (place competition files here)
 ├── requirements.txt
 └── README.md
 ```
@@ -135,9 +141,9 @@ Place the competition parquet files into the `data/` directory. Open `main.ipynb
 
 The 0.64677 private score is a baseline. These are the architectural steps that would take this pipeline toward production-grade ranking quality:
 
-- [ ] **Two-Tower Neural Network** — Separate user embedding tower + item embedding tower, trained jointly with contrastive loss. Industry standard at Google (YouTube recommendations), Meta (Facebook feed), and Pinterest. Enables sub-millisecond candidate retrieval at millions-of-items scale via approximate nearest neighbor search (FAISS).
-- [ ] **Session-Based Sequential Model** — GRU4Rec or SASRec to model the temporal click sequence within a session. "User clicked A, then B, then C → likely to click D." Standard LightGBM treats the session as a bag of features; sequential models capture the ORDER of interactions.
-- [ ] **True Learning-to-Rank Loss** — Replace pointwise binary cross-entropy with LambdaRank or ListNet loss, which directly optimize ranking metrics (NDCG, MAP) rather than classification accuracy. This is the loss function used in production ranking systems.
-- [ ] **Counterfactual Evaluation** — Implement Inverse Propensity Scoring (IPS) for offline evaluation. Standard AUC overestimates model quality because the training data is itself biased by the previous ranking system (position bias). IPS corrects for this.
-- [ ] **Feature Store Simulation** — Redesign feature computation as a real-time feature store using Redis. Benchmark: can session-level and user-level features be served in <10ms to match production SLA requirements?
-- [ ] **Semantic Search Layer** — Add a semantic retrieval stage before ranking: embed search terms and product titles using a Turkish sentence transformer, retrieve top-K candidates by cosine similarity, then rerank with the LightGBM model. This mimics the two-stage retrieve-then-rerank architecture used in production.
+- [x] **Two-Tower Neural Network** — Separate user embedding tower + item embedding tower, trained jointly with contrastive loss. Industry standard at Google (YouTube recommendations), Meta (Facebook feed), and Pinterest. Enables sub-millisecond candidate retrieval at millions-of-items scale via approximate nearest neighbor search (FAISS).
+- [x] **Session-Based Sequential Model** — GRU4Rec or SASRec to model the temporal click sequence within a session. "User clicked A, then B, then C → likely to click D." Standard LightGBM treats the session as a bag of features; sequential models capture the ORDER of interactions.
+- [x] **True Learning-to-Rank Loss** — Replace pointwise binary cross-entropy with LambdaRank or ListNet loss, which directly optimize ranking metrics (NDCG, MAP) rather than classification accuracy. This is the loss function used in production ranking systems.
+- [x] **Counterfactual Evaluation** — Implement Inverse Propensity Scoring (IPS) for offline evaluation. Standard AUC overestimates model quality because the training data is itself biased by the previous ranking system (position bias). IPS corrects for this.
+- [x] **Feature Store Simulation** — Redesign feature computation as a real-time feature store using Redis. Benchmark: can session-level and user-level features be served in <10ms to match production SLA requirements?
+- [x] **Semantic Search Layer** — Add a semantic retrieval stage before ranking: embed search terms and product titles using a Turkish sentence transformer, retrieve top-K candidates by cosine similarity, then rerank with the LightGBM model. This mimics the two-stage retrieve-then-rerank architecture used in production.
