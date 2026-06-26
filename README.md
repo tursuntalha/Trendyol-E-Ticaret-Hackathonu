@@ -15,6 +15,8 @@ End-to-end search ranking pipeline for the **Trendyol E-Commerce Hackathon 2025*
 
 **Competition:** [Trendyol E-Ticaret Hackathonu 2025](https://www.kaggle.com/competitions/trendyol-e-ticaret-hackathonu-2025-kaggle)
 
+**Project Vision:** Search ranking at e-commerce scale. The click/order AUC optimization approach implemented here is the exact foundation of production recommendation systems at Trendyol, Amazon, Zalando, and similar platforms. Learning-to-rank is one of the highest-value ML applications in industry — a 1% improvement in ranking quality at scale translates to millions in additional revenue. This hackathon entry is the starting point for understanding how those systems are built.
+
 ---
 
 ## Competition Overview
@@ -117,22 +119,25 @@ source .venv/bin/activate   # Linux/macOS
 pip install -r requirements.txt
 ```
 
-Place the competition parquet files into the `data/` directory matching the notebook's path expectations. Open `main.ipynb` and run all cells in order. Output: `submission.csv` in the project root.
+Place the competition parquet files into the `data/` directory. Open `main.ipynb` and run all cells in order. Output: `submission.csv` in the project root.
 
 ---
 
 ## Notes
 
-- Data paths in the notebook use the local `data/` directory (not Kaggle's `/kaggle/input/` paths).
-- Diagnostic cells and runtime pip installs have been removed; all dependencies are in `requirements.txt`.
+- Data paths use the local `data/` directory (not Kaggle's `/kaggle/input/` paths).
 - Polars is used for fast lazy evaluation on large parquet files before converting to pandas for model training.
+- Diagnostic cells and runtime pip installs have been removed; all dependencies are in `requirements.txt`.
 
 ---
 
-## Potential Improvements
+## Beyond the Hackathon
 
-- [ ] Two-tower neural network for user-product embedding
-- [ ] Session-based sequential models (GRU/Transformer)
-- [ ] Candidate re-ranking with cross-attention
-- [ ] Learning-to-rank loss (LambdaRank, ListNet)
-- [ ] Ensemble of TabNet + LightGBM + CatBoost
+The 0.64677 private score is a baseline. These are the architectural steps that would take this pipeline toward production-grade ranking quality:
+
+- [ ] **Two-Tower Neural Network** — Separate user embedding tower + item embedding tower, trained jointly with contrastive loss. Industry standard at Google (YouTube recommendations), Meta (Facebook feed), and Pinterest. Enables sub-millisecond candidate retrieval at millions-of-items scale via approximate nearest neighbor search (FAISS).
+- [ ] **Session-Based Sequential Model** — GRU4Rec or SASRec to model the temporal click sequence within a session. "User clicked A, then B, then C → likely to click D." Standard LightGBM treats the session as a bag of features; sequential models capture the ORDER of interactions.
+- [ ] **True Learning-to-Rank Loss** — Replace pointwise binary cross-entropy with LambdaRank or ListNet loss, which directly optimize ranking metrics (NDCG, MAP) rather than classification accuracy. This is the loss function used in production ranking systems.
+- [ ] **Counterfactual Evaluation** — Implement Inverse Propensity Scoring (IPS) for offline evaluation. Standard AUC overestimates model quality because the training data is itself biased by the previous ranking system (position bias). IPS corrects for this.
+- [ ] **Feature Store Simulation** — Redesign feature computation as a real-time feature store using Redis. Benchmark: can session-level and user-level features be served in <10ms to match production SLA requirements?
+- [ ] **Semantic Search Layer** — Add a semantic retrieval stage before ranking: embed search terms and product titles using a Turkish sentence transformer, retrieve top-K candidates by cosine similarity, then rerank with the LightGBM model. This mimics the two-stage retrieve-then-rerank architecture used in production.
